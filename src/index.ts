@@ -5,7 +5,7 @@ import { embedAndStore, queryDocuments, getVectorCount, deleteDocumentVectors } 
 import { generateRAGResponse } from './rag';
 import { SessionDO } from './durable-objects/session';
 import { handleScheduledCleanup } from './cleanup';
-import { AIGate } from '../../src/lib/durable-objects/ai-gate';
+import { AIGate } from './durable-objects/ai-gate';
 
 // Ensure a single, explicit export of DO classes
 export { SessionDO, AIGate };
