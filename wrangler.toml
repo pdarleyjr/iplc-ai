@@ -16,11 +16,11 @@ binding = "AI"
 binding = "DOC_INDEX"
 index_name = "doc-index"
 
-# KV namespaces for data storage - using the same IDs as the parent project
+# KV namespaces for data storage - using iplc-ai specific namespaces
 [[kv_namespaces]]
 binding = "USER_SESSIONS"
-id = "92ec4b43378242efaad5c898e961f8981"
-preview_id = "92ec4b43378242efaad5c898e961f8981"
+id = "fbd8f1fac5594c80a355f6e85084f41c"
+preview_id = "fbd8f1fac5594c80a355f6e85084f41c"
 
 [[kv_namespaces]]
 binding = "DOCUMENTS"
