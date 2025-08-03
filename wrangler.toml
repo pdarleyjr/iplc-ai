@@ -19,8 +19,8 @@ index_name = "doc-index"
 # KV namespaces for data storage - using the same IDs as the parent project
 [[kv_namespaces]]
 binding = "USER_SESSIONS"
-id = "fbd8f1fac5594c80a355f6e85084f41c"
-preview_id = "fbd8f1fac5594c80a355f6e85084f41c"
+id = "92ec4b43378242efaad5c898e961f8981"
+preview_id = "92ec4b43378242efaad5c898e961f8981"
 
 [[kv_namespaces]]
 binding = "DOCUMENTS"
@@ -36,6 +36,11 @@ preview_id = "30dd285e5d5a4cabafbd9fae69ba5d5e"
 binding = "SESSION"
 id = "a4926bc00e9b438a898289934457a579"
 preview_id = "a4926bc00e9b438a898289934457a579"
+
+[[kv_namespaces]]
+binding = "CHAT_HISTORY"
+id = "11baf1c1465d4b03afbe59fdfcdfe1b8"
+preview_id = "11baf1c1465d4b03afbe59fdfcdfe1b8"
 
 # Durable Objects configuration
 [[durable_objects.bindings]]
