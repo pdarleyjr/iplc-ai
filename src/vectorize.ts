@@ -34,6 +34,27 @@ export async function checkVectorQuota(env: Env, requiredVectors: number): Promi
   };
 }
 
+// Emit structured metrics for quota monitoring
+export function emitQuotaMetric(
+  env: Env,
+  metrics: {
+    count: number;
+    delta?: number;
+    reason: string;
+  }
+): void {
+  const logEntry = {
+    type: 'vector_quota',
+    timestamp: new Date().toISOString(),
+    count: metrics.count,
+    delta: metrics.delta,
+    reason: metrics.reason,
+    percentUsed: (metrics.count / MAX_VECTORS) * 100
+  };
+  
+  console.log('[METRIC]', JSON.stringify(logEntry));
+}
+
 // Chunk text into smaller pieces for embedding
 export function chunkText(text: string, maxChunkSize: number = 1000): string[] {
   const chunks: string[] = [];
@@ -84,6 +105,13 @@ export async function embedAndStore(
     // Check vector quota before proceeding
     const quotaCheck = await checkVectorQuota(env, allChunks.length);
     if (!quotaCheck.allowed) {
+      // Emit metric for quota denial
+      emitQuotaMetric(env, {
+        count: quotaCheck.currentCount,
+        delta: 0,
+        reason: `quota_denied_requested_${allChunks.length}`
+      });
+      
       return {
         success: false,
         error: `Vector limit exceeded. Current count: ${quotaCheck.currentCount}/${MAX_VECTORS}. Requested: ${allChunks.length}. Available quota: ${quotaCheck.availableQuota}`
@@ -110,7 +138,14 @@ export async function embedAndStore(
     await env.DOC_INDEX.upsert(vectors);
 
     // Update vector count after successful insertion
-    await updateVectorCount(env, vectors.length);
+    const newCount = await updateVectorCount(env, vectors.length);
+    
+    // Emit metric for successful upsert
+    emitQuotaMetric(env, {
+      count: newCount,
+      delta: vectors.length,
+      reason: `upsert_document_${metadata.documentId}`
+    });
 
     // Store document metadata in KV
     const docMetadata = {
@@ -241,7 +276,14 @@ export async function deleteDocumentVectors(
     await env.DOC_INDEX.deleteByIds(vectorIds);
     
     // Update vector count
-    await updateVectorCount(env, -vectorIds.length);
+    const newCount = await updateVectorCount(env, -vectorIds.length);
+    
+    // Emit metric for successful deletion
+    emitQuotaMetric(env, {
+      count: newCount,
+      delta: -vectorIds.length,
+      reason: `delete_document_${documentId}`
+    });
     
     // Delete document metadata
     await env.DOC_METADATA.delete(documentId);

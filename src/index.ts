@@ -1,7 +1,7 @@
 import type { Env, ChatMessage, EmbedResponse, QueryResult } from './types';
 import type { EmbedRequest, RAGRequest, QueryRequest, DeleteDocumentRequest } from './types/requests';
 import { isEmbedRequest, isRAGRequest, isQueryRequest, isDeleteDocumentRequest } from './types/requests';
-import { embedAndStore, queryDocuments } from './vectorize';
+import { embedAndStore, queryDocuments, getVectorCount, deleteDocumentVectors } from './vectorize';
 import { generateRAGResponse } from './rag';
 import { SessionDO } from './durable-objects/session';
 import { handleScheduledCleanup } from './cleanup';
@@ -57,6 +57,12 @@ export default {
             return await handleDeleteDocument(request, env, corsHeaders);
           }
           return new Response('Method not allowed', { status: 405, headers: corsHeaders });
+
+        case '/metrics/quota':
+          if (request.method !== 'GET') {
+            return new Response('Method not allowed', { status: 405, headers: corsHeaders });
+          }
+          return await handleMetricsQuota(env, corsHeaders);
 
         default:
           return new Response('Not found', { status: 404, headers: corsHeaders });
@@ -230,18 +236,44 @@ async function handleDeleteDocument(request: Request, env: Env, corsHeaders: any
   const { documentId } = data;
 
   try {
-    // Delete from metadata
-    await env.DOC_METADATA.delete(documentId);
+    // Use deleteDocumentVectors to properly handle deletion and update count
+    const result = await deleteDocumentVectors(documentId, env);
     
-    // Note: Vectorize doesn't support individual vector deletion in free tier
-    // Vectors will be cleaned up by the cron job
-    
-    return new Response(JSON.stringify({ success: true }), {
+    return new Response(JSON.stringify(result), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (error) {
     console.error('Delete document error:', error);
     return new Response(JSON.stringify({ error: 'Failed to delete document' }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+}
+
+async function handleMetricsQuota(env: Env, corsHeaders: any): Promise<Response> {
+  try {
+    const count = await getVectorCount(env);
+    const limit = 100; // MAX_VECTORS from vectorize.ts
+    const percentUsed = (count / limit) * 100;
+    
+    const metrics = {
+      count,
+      limit,
+      percentUsed: Math.round(percentUsed * 100) / 100, // Round to 2 decimal places
+      timestamp: new Date().toISOString()
+    };
+    
+    return new Response(JSON.stringify(metrics), {
+      headers: {
+        ...corsHeaders,
+        'Content-Type': 'application/json',
+        'Cache-Control': 'no-store'
+      },
+    });
+  } catch (error) {
+    console.error('Metrics quota error:', error);
+    return new Response(JSON.stringify({ error: 'Failed to get vector quota metrics' }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
