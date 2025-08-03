@@ -1,0 +1,26 @@
+{
+  "name": "iplc-ai",
+  "version": "1.0.0",
+  "description": "IPLC AI Worker for RAG and document processing",
+  "main": "src/index.ts",
+  "scripts": {
+    "dev": "wrangler dev src/index.ts --port 8788 --local",
+    "deploy": "wrangler deploy",
+    "tail": "wrangler tail",
+    "types": "wrangler types"
+  },
+  "keywords": [
+    "cloudflare",
+    "workers",
+    "ai",
+    "rag",
+    "vectorize"
+  ],
+  "author": "IPLC",
+  "license": "MIT",
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20240129.0",
+    "typescript": "^5.3.3",
+    "wrangler": "^4.27.0"
+  }
+}

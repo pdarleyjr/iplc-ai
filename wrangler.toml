@@ -1,0 +1,46 @@
+name = "iplc-ai"
+main = "src/index.ts"
+compatibility_date = "2024-03-11"
+compatibility_flags = ["nodejs_compat"]
+
+[observability]
+enabled = true
+
+# AI binding for Workers AI
+[ai]
+binding = "AI"
+
+# Vectorize index for document embeddings
+[[vectorize]]
+binding = "DOC_INDEX"
+index_name = "doc-index"
+
+# KV namespaces for data storage - using the same IDs as the parent project
+[[kv_namespaces]]
+binding = "USER_SESSIONS"
+id = "92ec4b43378242efaad5c898e961f898"
+preview_id = "92ec4b43378242efaad5c898e961f898"
+
+[[kv_namespaces]]
+binding = "DOCUMENTS"
+id = "995f435153f84382aa70fff8ab3a8e89"
+preview_id = "995f435153f84382aa70fff8ab3a8e89"
+
+[[kv_namespaces]]
+binding = "RATE_LIMITER"
+id = "30dd285e5d5a4cabafbd9fae69ba5d5e"
+preview_id = "30dd285e5d5a4cabafbd9fae69ba5d5e"
+
+[[kv_namespaces]]
+binding = "SESSION"
+id = "a4926bc00e9b438a8898289934457a57"
+preview_id = "a4926bc00e9b438a8898289934457a57"
+
+# Durable Objects configuration
+[[durable_objects.bindings]]
+name = "AI_GATE"
+class_name = "AIGate"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["AIGate"]
