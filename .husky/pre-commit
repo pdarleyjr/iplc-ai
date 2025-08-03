@@ -1,0 +1,8 @@
+# Run TypeScript check
+npm run type-check || exit 1
+
+# Run lint-staged
+npx lint-staged
+
+# Run secret scanning
+npm run scan-secrets || exit 1
